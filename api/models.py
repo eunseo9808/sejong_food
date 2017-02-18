@@ -3,6 +3,11 @@ from django.db import models
 # Create your models here.
 class Chatter(models.Model):
 	user_key=models.CharField(max_length=20, unique=True)
+	next_chat_code=models.IntegerField(default=0)
+
+	def set_next_chat_code(self, next_chat_code):
+		self.next_chat_code=next_chat_code
+		self.save()
 
 class Chat(models.Model):
 	content=models.TextField()

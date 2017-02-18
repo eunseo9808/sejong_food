@@ -1,14 +1,14 @@
-from django.http import HttpResponse
 from django.http import JsonResponse
-from api.models import *
-import random
-import json
-from datetime import datetime
-from django.views.decorators.csrf import csrf_exempt
-import ast
 
-default_button=["학생회관", "찬 스카이라운지","우정당 학생 식당", "군자관"]
-default_keyboard={'type': 'buttons', 'buttons':default_button}
+from api.student_buttons import *
+from api.skyrounge_buttons import *
+from api.woojung_buttons import *
+from api.kunja_buttons import *
+from api.defaults import *
+
+from api.models import Chatter,Chat
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def friend(request):
@@ -33,7 +33,6 @@ def keyboard(request):
 
 @csrf_exempt
 def message(request):
-
     request_str=request.body.decode("utf-8")
     request_json=json.loads(request_str)
     content=request_json['content']
@@ -60,158 +59,90 @@ def message(request):
 
     res = {"message": {"text": content}, 'keyboard': default_keyboard}
 
-    if "랜덤 메뉴" == content:
-        food_list = Student_union_menu.objects.all()
-        random_key = random.choice(food_list)
-        msg = "추천메뉴는 " + random_key.name + "(" + random_key.price + ")입니다."
+    if user.next_chat_code==0 :
+        if "학생회관" == content:
+            user.set_next_chat_code(1)
+            res=select_student()
 
-        res = {"message": {"text": msg}, 'keyboard': default_keyboard}
+        elif "찬 스카이라운지" == content:
+            user.set_next_chat_code(2)
+            res=select_skyrounge()
 
-    elif "찬 스카이라운지" == content:
-        foods=Skyrounge_menu.objects.all()
-        count=0
-        days=[]
+        elif "우정당 학생 식당" == content:
+            user.set_next_chat_code(3)
+            res=select_woojung()
 
-        for food in foods:
-            days.append(food.day)
+        elif "군자관" == content:
+            user.set_next_chat_code(4)
+            res=select_kunja()
 
+    elif int(user.next_chat_code/10)==0 :
+        if user.next_chat_code==1 :
+            if "랜덤 메뉴" == content:
+                user.set_next_chat_code(0)
+                res=random_menu()
 
-        keyboard_ = {'type': 'buttons', 'buttons': days}
-        res = {'message': {'text': '날짜를 선택해주세요(일주일 단위로 업데이트 됩니다)'}, 'keyboard': keyboard_}
+            elif "음식 종류" == content:
+                user.set_next_chat_code(0)
+                res=menu_kind()
 
-    elif "우정당 학생 식당" == content:
-        woojungs = Woojung.objects.all()
-        restaurant = []
-        for woojung in woojungs:
-            restaurant.append(woojung.name)
-        keyboard_ = {'type': 'buttons', 'buttons': restaurant}
-        res = {'message': {'text': '식당을 선택해주세요'}, 'keyboard': keyboard_}
+            elif "음식 가격" == content:
+                user.set_next_chat_code(10)
+                res=menu_price()
 
-    elif "군자관" == content:
-        foods = kunja_menu.objects.all()
-        count = 0
-        days = []
-        for food in foods:
-            days.append(food.day)
+            elif "메뉴 추천" == content:
+                user.set_next_chat_code(11)
+                res=recommend_menu()
 
-        keyboard_ = {'type': 'buttons', 'buttons': days}
-        res = {'message': {'text': '날짜를 선택해주세요'}, 'keyboard': keyboard_}
+            elif "인기 메뉴" == content:
+                user.set_next_chat_code(0)
+                res=best_menu()
 
-    elif "학생회관" == content:
-        keyboard_= {'type': 'buttons', 'buttons':['음식 종류','음식 가격', '메뉴 추천','인기 메뉴', '랜덤 메뉴']}
-        res = {'message': {'text': '선택해주세요'}, 'keyboard': keyboard_}
+        elif user.next_chat_code==2:
+            user.set_next_chat_code(20)
+            res=sky_lunch_or_dinner()
 
-    elif "음식 종류" == content:
-        foods = Student_union_menu.objects.all()
-        food_str=''
+        elif user.next_chat_code==3:
+            user.set_next_chat_code(30)
+            res=select_day(content)
 
-        for food in foods:
-            food_str+=food.name+"("+food.price+")"+"\n"
+        elif user.next_chat_code==4:
+            user.set_next_chat_code(40)
+            res = sky_lunch_or_dinner()
 
-        food_str.strip()
+    elif int(user.next_chat_code/100)==0 :
+        if int(user.next_chat_code/10)==1:
+            if user.next_chat_code%10==0:
+                user.set_next_chat_code(0)
+                res = select_menu_price(content)
 
-        res = {'message': {'text': food_str}, 'keyboard': default_keyboard}
+            elif user.next_chat_code%10==1 :
+                user.set_next_chat_code(0)
+                res=select_recommend_menu(content)
 
-    elif "음식 가격" == content:
-        food_list = Student_union_menu.objects.all()
-        buttons=[]
-
-        for food in food_list:
-            buttons.append(food.name)
-
-        keyboard_ = {'type': 'buttons', 'buttons': buttons}
-        res = {'message': {'text': '원하는 음식을 선택해주세요'}, 'keyboard': keyboard_}
-
-    elif "메뉴 추천" == content:
-        food_list = Student_union_menu.objects.all()
-        buttons = []
-
-        for food in food_list:
-            buttons.append(food.name)
-
-        keyboard_ = {'type': 'buttons', 'buttons': buttons}
-        res = {'message': {'text': '추천 할 음식을 선택해주세요'}, 'keyboard': keyboard_}
-    elif "인기 메뉴"==content:
-        foods = list(Student_union_menu.objects.all().order_by('-popular'))
-        msg="가장 인기있는 음식은?\n"
-
-        count=1
-        prev_food=foods[0]
-        rank=1
-        for food in foods:
-            if prev_food.popular==food.popular :
-                msg += str(rank) + "위 " + str(food.popular) + "표 " + food.name + "(" + food.price + ")\n"
-            else :
-                rank=count
-                msg+=str(count)+"위 "+str(food.popular)+"표 "+food.name+"("+food.price+")\n"
-
-            prev_food = food
-            count+=1
-            if count>5 : break
-
-        res = {'message': {'text': msg}, 'keyboard': default_keyboard}
-
-    else :
-        chatter = Chatter.objects.get(user_key=user_key)
-        chattings = list(Chat.objects.filter(user=chatter).order_by("-created_date"))
-        foods=Student_union_menu.objects.filter(name=content)
-
-        if foods.count() > 0 :
-            if chattings[1].content=="메뉴 추천":
-                food = foods.first()
-                food.popular+=1
-                food.save()
-                res = {'message': {'text': '추천 완료되었습니다!'}, 'keyboard': default_keyboard}
-            else :
-                food=foods.first()
-                print("?????")
-                msg=food.name+"의 가격은 "+food.price+"입니다."
-                res = {'message': {'text': msg}, 'keyboard': default_keyboard}
         else :
+            chatter = Chatter.objects.get(user_key=user_key)
+            chattings = list(Chat.objects.filter(user=chatter).order_by("-created_date"))
 
+            if int(user.next_chat_code/10)==2:
+                if content == "중식":
+                    res = sky_select_lunch(chattings[1].content)
+                else:
+                    res = sky_select_dinner(chattings[1].content)
+                user.set_next_chat_code(0)
 
-            if chattings[1].content=="찬 스카이라운지":
-                keyboard_ = {'type': 'buttons', 'buttons': ['중식', '석식']}
-                res = {'message': {'text': '중식, 석식 선택해주세요.'}, 'keyboard': keyboard_}
-            elif chattings[1].content=="우정당 학생 식당":
-                woojung = Woojung.objects.get(name=content)
-                foods = Woojung_menu.objects.filter(type=woojung)
-                days = []
-                for food in foods:
-                    days.append(food.day)
+            elif int(user.next_chat_code / 10) == 3:
+                res=menu_print(content,chattings[1].content)
+                user.set_next_chat_code(0)
 
-                if len(days) == 0 :
-                    res = {'message': {'text': '해당하는 메뉴가 없습니다.'}, 'keyboard': default_keyboard}
-                else :
-                    keyboard_ = {'type': 'buttons', 'buttons': days}
-                    res = {'message': {'text': '날짜를 선택해주세요'}, 'keyboard': keyboard_}
-            elif chattings[1].content == "군자관":
-                keyboard_ = {'type': 'buttons', 'buttons': ['중식', '석식']}
-                res = {'message': {'text': '중식, 석식 선택해주세요.'}, 'keyboard': keyboard_}
-
-            else:
-                if chattings[2].content == "찬 스카이라운지":
-                    if content == "중식":
-                        menu = Skyrounge_menu.objects.get(day=chattings[1].content).lunch
-                        res = {'message': {'text': menu}, 'keyboard': default_keyboard}
-                    else:
-                        menu = Skyrounge_menu.objects.get(day=chattings[1].content).dinner
-                        res = {'message': {'text': menu}, 'keyboard': default_keyboard}
-
-                elif chattings[2].content == "우정당 학생 식당":
-                    woojung = Woojung.objects.get(name=chattings[1].content)
-                    menu = Woojung_menu.objects.filter(day=content).get(type=woojung)
-
-                    keyboard_ = {'type': 'buttons', 'buttons': default_button}
-                    res = {'message': {'text': menu.menu + "(" + menu.price + ")"}, 'keyboard': keyboard_}
-
-                elif chattings[2].content == "군자관":
-                    if content == "중식":
-                        menu = kunja_menu.objects.get(day=chattings[1].content).lunch
-                        res = {'message': {'text': menu}, 'keyboard': default_keyboard}
-                    else:
-                        menu = kunja_menu.objects.get(day=chattings[1].content).dinner
-                        res = {'message': {'text': menu}, 'keyboard': default_keyboard}
+            elif int(user.next_chat_code / 10 )== 4:
+                if content == "중식":
+                    res = kunja_select_lunch(chattings[1].content)
+                else:
+                    res = kunja_select_dinner(chattings[1].content)
+                user.set_next_chat_code(0)
+    else:
+        user.set_next_chat_code(0)
 
     return JsonResponse(res, status=200)
 
