@@ -21,7 +21,6 @@ def friend(request):
 
     if request.method=='POST':
         user = Chatter.objects.get_or_create(user_key=user_key)
-
         res = {"message": {"text": "안녕하세요!"}, 'keyboard': default_keyboard}
 
     return JsonResponse(res, status=200)
@@ -49,21 +48,19 @@ def message(request):
     content=request_json['content']
     user_key=request_json['user_key']
 
-    user=Chatter.objects.filter(user_key=user_key)
-    if user.count()==0 :
-        user=Chatter.objects.create(user_key=user_key)
-        user.save()
-    else :
-        user=user.first()
+    user,created=Chatter.objects.get_or_create(user_key=user_key)
 
     chats=Chat.objects.filter(user=user).order_by("-created_date")
     if chats.count()>=5 :
         chats.last().delete()
-    elif chats.count()>0 :
-        if chats.first().content==content :
-            res = {"message": {"text": content}, 'keyboard': default_keyboard}
 
+
+    if chats.count()>0 :
+        if chats.first().content==content :
+            user.set_next_chat_code(0)
+            res = {"message": {"text": content}, 'keyboard': default_keyboard}
             return JsonResponse(res, status=200)
+
 
     chat=Chat.objects.create(user=user, content=content)
     chat.save()
@@ -89,7 +86,9 @@ def message(request):
 
         elif "Info" == content:
             user.set_next_chat_code(0)
-            res = {"message": {"text": "제작 : 이은서\n버그 발생시 eunseo9808@naver.com으로 메일 주세요\n소스 : https://github.com/eunseo9808/sejong_food"}, 'keyboard': default_keyboard}
+            res = {"message": {"text": "제작 : 이은서\n"
+                                       "버그 발생시 eunseo9808@naver.com으로 메일 주세요\n"
+                                       "소스 : https://github.com/eunseo9808/sejong_food"}, 'keyboard': default_keyboard}
 
     elif int(user.next_chat_code/10)==0 :
         if user.next_chat_code==1 :

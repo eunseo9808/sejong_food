@@ -21,6 +21,9 @@ def kunja_lunch_or_dinner():
 
 def kunja_select_lunch(content):
     menu = kunja_menu.objects.get(day=content).lunch
+    if menu == '' :
+        menu="해당하는 값에 데이터가 없습니다."
+
     res = {'message': {'text': menu}, 'keyboard': default_keyboard}
 
     return res
@@ -28,6 +31,8 @@ def kunja_select_lunch(content):
 
 def kunja_select_dinner(content):
     menu = kunja_menu.objects.get(day=content).dinner
+    if menu == '' :
+        menu="해당하는 값에 데이터가 없습니다."
     res = {'message': {'text': menu}, 'keyboard': default_keyboard}
 
     return res

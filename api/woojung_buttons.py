@@ -31,7 +31,8 @@ def select_day(content):
 def menu_print(content,prev_content):
     woojung = Woojung.objects.get(name=prev_content)
     menu = Woojung_menu.objects.filter(day=content).get(type=woojung)
-
-    keyboard_ = {'type': 'buttons', 'buttons': default_button}
-    res = {'message': {'text': menu.menu + "(" + menu.price + ")"}, 'keyboard': keyboard_}
+    if menu.menu == '' :
+        res = {'message': {'text': "해당하는 값에 데이터가 없습니다."}, 'keyboard': default_keyboard}
+    else :
+        res = {'message': {'text': menu.menu + "(" + menu.price + ")"}, 'keyboard': default_keyboard}
     return res

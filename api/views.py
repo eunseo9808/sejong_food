@@ -35,7 +35,6 @@ def save_skyrounge_data(request):
 	menu_list=save_data(1)
 	Skyrounge_menu.objects.all().delete()
 	for menu in menu_list:
-		if menu['lunch']=='': break
 		try :
 			tmp=Skyrounge_menu.objects.create(day=menu['day'], lunch=menu['lunch'], dinner=menu['dinner'])
 			tmp.save()
@@ -46,13 +45,13 @@ def save_skyrounge_data(request):
 @csrf_exempt
 def save_woojung_data(request):
 	cource_list=save_data(2)
+	Woojung_menu.objects.all().delete()
 	for cource in cource_list:
 		try:
 			tmp=Woojung.objects.create(name=cource['corner_name'], running_time=cource['oper_hour'])
 		except IntegrityError:
 			tmp=Woojung.objects.get(name=cource['corner_name'])
 		for menu in cource['menu_info']:
-			if menu['menu']=='': break
 			if not tmp.menus.filter(day=menu['day']).count()==0:
 				break;
 			menu_tmp=Woojung_menu.objects.create(price=menu['price'], day=menu['day'], menu=menu['menu'])
@@ -66,7 +65,6 @@ def save_kunja_data(request):
 	menu_list=save_data(3)
 	kunja_menu.objects.all().delete()
 	for menu in menu_list:
-		if menu['lunch']=='': break
 		try:
 			tmp=kunja_menu.objects.create(day=menu['day'], lunch=menu['lunch'], dinner=menu['dinner'])
 			tmp.save()

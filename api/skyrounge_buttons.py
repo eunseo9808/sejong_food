@@ -20,12 +20,16 @@ def sky_lunch_or_dinner():
 
 def sky_select_lunch(content):
     menu = Skyrounge_menu.objects.get(day=content).lunch
+    if menu == '' :
+        menu="해당하는 값에 데이터가 없습니다."
     res = {'message': {'text': menu}, 'keyboard': default_keyboard}
 
     return res
 
 def sky_select_dinner(content):
     menu = Skyrounge_menu.objects.get(day=content).dinner
+    if menu == '' :
+        menu="해당하는 값에 데이터가 없습니다."
     res = {'message': {'text': menu}, 'keyboard': default_keyboard}
 
     return res
