@@ -9,22 +9,33 @@ from api.defaults import *
 from api.models import Chatter,Chat
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 @csrf_exempt
 def friend(request):
+    res = {}
     request_str = request.body.decode("utf-8")
     request_json = json.loads(request_str)
     user_key = request_json['user_key']
-    if request.method=='POST':
-        user = Chatter.objects.create(user_key=user_key)
-        user.save()
-        res = {"message": {"text": "안녕하세요!"}, 'keyboard': default_keyboard}
-        return JsonResponse(res, status=200)
 
-    elif request.method=='DELETE':
+
+    if request.method=='POST':
+        user = Chatter.objects.get_or_create(user_key=user_key)
+
+        res = {"message": {"text": "안녕하세요!"}, 'keyboard': default_keyboard}
+
+    return JsonResponse(res, status=200)
+
+@csrf_exempt
+def friend_delete(request,user_key):
+    try:
         user = Chatter.objects.get(user_key=user_key)
-        chattings=Chat.objects.filter(user=user).delete()
         user.delete()
+    except ObjectDoesNotExist:
+        pass
+
+    return JsonResponse({},status=200)
+
 
 @csrf_exempt
 def keyboard(request):
@@ -76,6 +87,10 @@ def message(request):
             user.set_next_chat_code(4)
             res=select_kunja()
 
+        elif "Info" == content:
+            user.set_next_chat_code(0)
+            res = {"message": {"text": "제작 : 이은서\n버그 발생시 eunseo9808@naver.com으로 메일 주세요\n소스 : https://github.com/eunseo9808/sejong_food"}, 'keyboard': default_keyboard}
+
     elif int(user.next_chat_code/10)==0 :
         if user.next_chat_code==1 :
             if "랜덤 메뉴" == content:
@@ -97,6 +112,8 @@ def message(request):
             elif "인기 메뉴" == content:
                 user.set_next_chat_code(0)
                 res=best_menu()
+            else :
+                user.set_next_chat_code(0)
 
         elif user.next_chat_code==2:
             user.set_next_chat_code(20)
@@ -105,10 +122,14 @@ def message(request):
         elif user.next_chat_code==3:
             user.set_next_chat_code(30)
             res=select_day(content)
+            if res['message']['text']=='해당하는 메뉴가 없습니다.' :
+                user.set_next_chat_code(0)
 
         elif user.next_chat_code==4:
             user.set_next_chat_code(40)
             res = sky_lunch_or_dinner()
+        else :
+            user.set_next_chat_code(0)
 
     elif int(user.next_chat_code/100)==0 :
         if int(user.next_chat_code/10)==1:
@@ -119,6 +140,7 @@ def message(request):
             elif user.next_chat_code%10==1 :
                 user.set_next_chat_code(0)
                 res=select_recommend_menu(content)
+            else :user.set_next_chat_code(0)
 
         else :
             chatter = Chatter.objects.get(user_key=user_key)
@@ -132,15 +154,16 @@ def message(request):
                 user.set_next_chat_code(0)
 
             elif int(user.next_chat_code / 10) == 3:
-                res=menu_print(content,chattings[1].content)
                 user.set_next_chat_code(0)
+                res=menu_print(content,chattings[1].content)
 
             elif int(user.next_chat_code / 10 )== 4:
+                user.set_next_chat_code(0)
                 if content == "중식":
                     res = kunja_select_lunch(chattings[1].content)
                 else:
                     res = kunja_select_dinner(chattings[1].content)
-                user.set_next_chat_code(0)
+
     else:
         user.set_next_chat_code(0)
 

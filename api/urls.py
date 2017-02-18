@@ -21,4 +21,5 @@ urlpatterns = patterns('',
                        url(r'^keyboard$', keyboard, name='keyboard'),
                        url(r'^message$', message, name='message'),
                        url(r'^friend$', friend, name='friend'),
+                       url(r'^friend/(?P<user_key>.+)$', friend_delete, name='friend_delete'),
 )
