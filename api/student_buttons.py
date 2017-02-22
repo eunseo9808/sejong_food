@@ -1,5 +1,6 @@
 from api.models import Student_union_menu
 from api.defaults import default_keyboard
+from django.core.exceptions import ObjectDoesNotExist
 import random
 
 def select_student():
@@ -78,14 +79,24 @@ def best_menu():
     return res
 
 def select_recommend_menu(content):
-    food = Student_union_menu.objects.get(name=content)
+    try :
+        food = Student_union_menu.objects.get(name=content)
+    except ObjectDoesNotExist:
+        res = {'message': {'text': '옳지 않은 데이터입니다.'}, 'keyboard': default_keyboard}
+        return res
+
     food.popular += 1
     food.save()
     res = {'message': {'text': '추천 완료되었습니다!'}, 'keyboard': default_keyboard}
     return res
 
 def select_menu_price(content):
-    food = Student_union_menu.objects.get(name=content)
+    try:
+        food = Student_union_menu.objects.get(name=content)
+    except ObjectDoesNotExist:
+        res = {'message': {'text': '옳지 않은 데이터입니다.'}, 'keyboard': default_keyboard}
+        return res
+
     msg = food.name + "의 가격은 " + food.price + "입니다."
     res = {'message': {'text': msg}, 'keyboard': default_keyboard}
     return res

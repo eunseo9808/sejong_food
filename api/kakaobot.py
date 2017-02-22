@@ -141,6 +141,8 @@ def message(request):
                 res=select_recommend_menu(content)
             else :user.set_next_chat_code(0)
 
+            if res['message']['text'] == '옳지 않은 데이터입니다.':
+                user.set_next_chat_code(0)
         else :
             chatter = Chatter.objects.get(user_key=user_key)
             chattings = list(Chat.objects.filter(user=chatter).order_by("-created_date"))

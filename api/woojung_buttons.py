@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from api.models import Woojung
 from api.models import Woojung_menu
 from api.defaults import default_keyboard,default_button
@@ -14,7 +16,11 @@ def select_woojung():
     return res
 
 def select_day(content):
-    woojung = Woojung.objects.get(name=content)
+    try:
+        woojung = Woojung.objects.get(name=content)
+    except ObjectDoesNotExist:
+        return {'message': {'text': '해당하는 메뉴가 없습니다.'}, 'keyboard': default_keyboard}
+
     foods = Woojung_menu.objects.filter(type=woojung)
     days = []
     for food in foods:
@@ -29,7 +35,11 @@ def select_day(content):
     return res
 
 def menu_print(content,prev_content):
-    woojung = Woojung.objects.get(name=prev_content)
+    try :
+        woojung = Woojung.objects.get(name=prev_content)
+    except ObjectDoesNotExist:
+        return {'message': {'text': '해당하는 메뉴가 없습니다.'}, 'keyboard': default_keyboard}
+
     menu = Woojung_menu.objects.filter(day=content).get(type=woojung)
     if menu.menu == '' :
         res = {'message': {'text': "해당하는 값에 데이터가 없습니다."}, 'keyboard': default_keyboard}
