@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import random
 
 def select_student():
-    keyboard_ = {'type': 'buttons', 'buttons': ['음식 종류', '음식 가격', '메뉴 추천', '인기 메뉴', '랜덤 메뉴']}
+    keyboard_ = {'type': 'buttons', 'buttons': ['음식 종류', '음식 가격', '메뉴 추천', '인기 메뉴', '메뉴 추천하기']}
     res = {'message': {'text': '선택해주세요'}, 'keyboard': keyboard_}
 
     return res

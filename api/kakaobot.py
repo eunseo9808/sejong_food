@@ -88,13 +88,12 @@ def message(request):
 
         elif "Info" == content:
             user.set_next_chat_code(0)
-            res = {"message": {"text": "제작 : 이은서\n"
-                                       "버그 발생시 eunseo9808@naver.com으로 메일 주세요\n"
+            res = {"message": {"text": "버그 발생시 eunseo9808@naver.com으로 메일 주세요\n"
                                        "소스 : https://github.com/eunseo9808/sejong_food"}, 'keyboard': default_keyboard}
 
     elif int(user.next_chat_code/10)==0 :
         if user.next_chat_code==1 :
-            if "랜덤 메뉴" == content:
+            if "메뉴 추천" == content:
                 user.set_next_chat_code(0)
                 res=random_menu()
 
@@ -106,7 +105,7 @@ def message(request):
                 user.set_next_chat_code(10)
                 res=menu_price()
 
-            elif "메뉴 추천" == content:
+            elif "메뉴 추천하기" == content:
                 user.set_next_chat_code(11)
                 res=recommend_menu()
 
