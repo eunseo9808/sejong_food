@@ -128,6 +128,7 @@ def get_woojung_data(request):
 		menu_list.append(menu_dict)
 	return HttpResponse(json.dumps(menu_list), status=200)
 
+
 from multiprocessing import Process
 from api.views import save_all
 import time
@@ -140,6 +141,5 @@ def periodic_save(request):
 
 def timer(request):
 	while True:
-		time.sleep(1)
 		save_all(request)
-		print("삐용삐용")
+		time.sleep(3600)

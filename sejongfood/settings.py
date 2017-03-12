@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = '#lrtsft1r_0)3*_w#cv=^m9xzu2xai#kqc7vj1j1#s!=ye%h+-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -57,13 +58,8 @@ WSGI_APPLICATION = 'sejongfood.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django',
-        'NAME' : 'sejong_haksik',
-        'USER' : 'root',
-        'PASSWORD' : 'asdf1234',
-        'OPTIONS': {
-            'autocommit' : True,
-        },
+	'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

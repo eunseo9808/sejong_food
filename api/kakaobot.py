@@ -57,10 +57,12 @@ def message(request):
 
     if chats.count()>0 :
         if chats.first().content==content :
-            user.set_next_chat_code(0)
-            res = {"message": {"text": content}, 'keyboard': default_keyboard}
-            return JsonResponse(res, status=200)
-
+            if user.next_chat_code == 0:
+                user.chat.all().delete()
+            else :
+                user.set_next_chat_code(0)
+                res = {"message": {"text": content}, 'keyboard': default_keyboard}
+                return JsonResponse(res, status=200)
 
     chat=Chat.objects.create(user=user, content=content)
     chat.save()
