@@ -13,7 +13,7 @@ def select_student():
 def random_menu():
     food_list = Student_union_menu.objects.all()
     random_key = random.choice(food_list)
-    msg = "추천메뉴는 " + random_key.name + "(" + random_key.price + ")입니다."
+    msg = "추천메뉴는 " + random_key.name + "(" + random_key.price + "원)입니다."
 
     res = {"message": {"text": msg}, 'keyboard': default_keyboard}
 
@@ -24,7 +24,7 @@ def menu_kind():
     food_str = ''
 
     for food in foods:
-        food_str += food.name + "(" + food.price + ")" + "\n"
+        food_str += food.name + "(" + food.price + "원)" + "\n"
 
     food_str = food_str[:len(food_str) - 1]
 
@@ -97,6 +97,6 @@ def select_menu_price(content):
         res = {'message': {'text': '옳지 않은 데이터입니다.'}, 'keyboard': default_keyboard}
         return res
 
-    msg = food.name + "의 가격은 " + food.price + "입니다."
+    msg = food.name + "의 가격은 " + food.price + "원 입니다."
     res = {'message': {'text': msg}, 'keyboard': default_keyboard}
     return res

@@ -22,10 +22,11 @@ def save_all(request):
 def save_student_data(request):
 	menu_list=save_data(0)
 	for menu in menu_list:
-		if menu['menu']=='': break
+		if menu['menu']=='': continue
 		try :
 			tmp=Student_union_menu.objects.create(name=menu['menu'], price=menu['price'])
 			tmp.save()
+
 		except IntegrityError:
 			pass
 	return HttpResponse("완료", status=200)
