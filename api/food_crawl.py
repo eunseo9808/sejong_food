@@ -19,7 +19,7 @@ def get_student_data():
 	for menu in menus :
 		menu_dict={}
 		find_index=menu.find('[')
-		menu_name=menu[:find_index-1]
+		menu_name=menu[:find_index]
 		menu_price=menu[find_index+1: find_index+5]
 		menu_dict['price']=menu_price
 		menu_dict['menu']=menu_name
